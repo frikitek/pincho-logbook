@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Pincho, createPincho, updatePincho } from '@/lib/storage';
+import { Pincho, createPincho, updatePincho, getCategorias } from '@/lib/storage';
 import { useToast } from '@/hooks/use-toast';
 
 interface PinchoFormProps {
@@ -23,6 +23,7 @@ export const PinchoForm = ({ pincho, onSuccess }: PinchoFormProps) => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const categorias = getCategorias();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -146,9 +147,15 @@ export const PinchoForm = ({ pincho, onSuccess }: PinchoFormProps) => {
                   <SelectValue placeholder="Selecciona categoría" />
                 </SelectTrigger>
                 <SelectContent>
-                  {[1, 2, 3, 4, 5, 6].map(num => (
-                    <SelectItem key={num} value={num.toString()}>
-                      Categoría {num}
+                  {categorias.map(categoria => (
+                    <SelectItem key={categoria.id} value={categoria.id.toString()}>
+                      <div className="flex items-center gap-2">
+                        <div 
+                          className="w-3 h-3 rounded-full"
+                          style={{ backgroundColor: categoria.color }}
+                        />
+                        {categoria.nombre}
+                      </div>
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -164,7 +171,6 @@ export const PinchoForm = ({ pincho, onSuccess }: PinchoFormProps) => {
               id="foto"
               type="file"
               accept="image/*"
-              capture="environment"
               onChange={(e) => {
                 const file = e.target.files?.[0];
                 if (file) {

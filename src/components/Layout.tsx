@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
-import { LogOut, Plus, List, Download, Upload } from 'lucide-react';
+import { LogOut, Plus, List, Download, Upload, Settings } from 'lucide-react';
 import { logout, importData } from '@/lib/storage';
 import laurelLogo from '@/assets/laureados-logo.png';
 
@@ -101,6 +101,15 @@ export const Layout = ({
             >
               <Plus className="h-4 w-4 mr-2" />
               Nuevo
+            </Button>
+            <Button
+              variant={currentView === 'categorias' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => onNavigate('categorias')}
+              className="flex-shrink-0"
+            >
+              <Settings className="h-4 w-4 mr-2" />
+              Categorías
             </Button>
             <Button
               variant="ghost"

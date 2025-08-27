@@ -14,7 +14,7 @@ interface ValoracionDialogProps {
 }
 
 export const ValoracionDialog = ({ pincho, open, onOpenChange, onSuccess }: ValoracionDialogProps) => {
-  const [nota, setNota] = useState(5);
+  const [nota, setNota] = useState(0);
   const [comentario, setComentario] = useState('');
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
@@ -36,7 +36,7 @@ export const ValoracionDialog = ({ pincho, open, onOpenChange, onSuccess }: Valo
         description: `Has valorado "${pincho.nombre}" con ${nota} estrellas.`
       });
       
-      setNota(5);
+      setNota(0);
       setComentario('');
       onOpenChange(false);
       onSuccess();
@@ -86,7 +86,7 @@ export const ValoracionDialog = ({ pincho, open, onOpenChange, onSuccess }: Valo
                   </button>
                 ))}
               </div>
-              <p className="text-lg font-semibold">{nota} de 5 estrellas</p>
+              <p className="text-lg font-semibold">{nota > 0 ? `${nota} de 5 estrellas` : 'Sin valorar'}</p>
             </div>
           </div>
 
@@ -115,7 +115,7 @@ export const ValoracionDialog = ({ pincho, open, onOpenChange, onSuccess }: Valo
             </Button>
             <Button 
               type="submit" 
-              disabled={loading}
+              disabled={loading || nota === 0}
             >
               {loading ? 'Guardando...' : 'Valorar'}
             </Button>

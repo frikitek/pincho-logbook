@@ -3,6 +3,7 @@ import { Login } from '@/components/Login';
 import { Layout } from '@/components/Layout';
 import { PinchoList } from '@/components/PinchoList';
 import { PinchoForm } from '@/components/PinchoForm';
+import { CategoriasManager } from '@/components/CategoriasManager';
 import { isAuthenticated, getPinchos, exportData, importData } from '@/lib/storage';
 import { useToast } from '@/hooks/use-toast';
 
@@ -106,6 +107,8 @@ const Index = () => {
             }} 
           />
         );
+      case 'categorias':
+        return <CategoriasManager />;
       case 'list':
       default:
         return <PinchoList pinchos={pinchos} onUpdate={loadPinchos} />;

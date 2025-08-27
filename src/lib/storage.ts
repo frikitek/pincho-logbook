@@ -1,3 +1,9 @@
+export interface Categoria {
+  id: number;
+  nombre: string;
+  color: string;
+}
+
 export interface Pincho {
   id: string;
   nombre: string;
@@ -23,8 +29,18 @@ export interface User {
 
 const STORAGE_KEYS = {
   PINCHOS: 'laureados_pinchos',
-  AUTH: 'laureados_auth'
+  AUTH: 'laureados_auth',
+  CATEGORIAS: 'laureados_categorias'
 };
+
+const DEFAULT_CATEGORIAS: Categoria[] = [
+  { id: 1, nombre: 'Categoría 1', color: '#ef4444' },
+  { id: 2, nombre: 'Categoría 2', color: '#f97316' },
+  { id: 3, nombre: 'Categoría 3', color: '#eab308' },
+  { id: 4, nombre: 'Categoría 4', color: '#22c55e' },
+  { id: 5, nombre: 'Categoría 5', color: '#3b82f6' },
+  { id: 6, nombre: 'Categoría 6', color: '#a855f7' }
+];
 
 const VALID_USERS: User[] = [
   { email: 'roberto@laurelados.com', password: 'laurelados' },
@@ -147,10 +163,31 @@ export const canUserRate = (pinchoId: string): boolean => {
   return !existingToday;
 };
 
+// Categoria functions
+export const getCategorias = (): Categoria[] => {
+  const categorias = localStorage.getItem(STORAGE_KEYS.CATEGORIAS);
+  return categorias ? JSON.parse(categorias) : DEFAULT_CATEGORIAS;
+};
+
+export const saveCategorias = (categorias: Categoria[]): void => {
+  localStorage.setItem(STORAGE_KEYS.CATEGORIAS, JSON.stringify(categorias));
+};
+
+export const updateCategoria = (id: number, updates: Partial<Omit<Categoria, 'id'>>): Categoria | null => {
+  const categorias = getCategorias();
+  const index = categorias.findIndex(c => c.id === id);
+  if (index === -1) return null;
+  
+  categorias[index] = { ...categorias[index], ...updates };
+  saveCategorias(categorias);
+  return categorias[index];
+};
+
 // Export/Import functions
 export const exportData = (): string => {
   const data = {
     pinchos: getPinchos(),
+    categorias: getCategorias(),
     exportDate: new Date().toISOString()
   };
   return JSON.stringify(data, null, 2);
@@ -161,6 +198,9 @@ export const importData = (jsonData: string): boolean => {
     const data = JSON.parse(jsonData);
     if (data.pinchos && Array.isArray(data.pinchos)) {
       savePinchos(data.pinchos);
+      if (data.categorias && Array.isArray(data.categorias)) {
+        saveCategorias(data.categorias);
+      }
       return true;
     }
     return false;
