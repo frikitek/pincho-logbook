@@ -16,10 +16,11 @@ export const PinchoForm = ({ pincho, onSuccess }: PinchoFormProps) => {
   const [formData, setFormData] = useState({
     nombre: pincho?.nombre || '',
     bar: pincho?.bar || '',
-    precio: pincho?.precio || 0,
+    precio: pincho?.precio || '',
     categoria: pincho?.categoria || 1,
     foto: pincho?.foto || ''
   });
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
@@ -28,9 +29,26 @@ export const PinchoForm = ({ pincho, onSuccess }: PinchoFormProps) => {
     setLoading(true);
 
     try {
+      let foto = formData.foto;
+      
+      // Convert image file to base64 if present
+      if (imageFile) {
+        foto = await new Promise<string>((resolve) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.readAsDataURL(imageFile);
+        });
+      }
+      
+      const pinchoData = {
+        ...formData,
+        precio: parseFloat(formData.precio.toString()) || 0,
+        foto
+      };
+
       if (pincho) {
         // Update existing pincho
-        const updated = updatePincho(pincho.id, formData);
+        const updated = updatePincho(pincho.id, pinchoData);
         if (updated) {
           toast({
             title: "Pincho actualizado",
@@ -39,7 +57,7 @@ export const PinchoForm = ({ pincho, onSuccess }: PinchoFormProps) => {
         }
       } else {
         // Create new pincho
-        createPincho(formData);
+        createPincho(pinchoData);
         toast({
           title: "Pincho creado",
           description: `"${formData.nombre}" ha sido creado correctamente.`
@@ -109,7 +127,7 @@ export const PinchoForm = ({ pincho, onSuccess }: PinchoFormProps) => {
                 step="0.01"
                 min="0"
                 value={formData.precio}
-                onChange={(e) => handleInputChange('precio', parseFloat(e.target.value) || 0)}
+                onChange={(e) => handleInputChange('precio', e.target.value)}
                 required
                 className="h-12"
                 placeholder="2.50"
@@ -140,23 +158,32 @@ export const PinchoForm = ({ pincho, onSuccess }: PinchoFormProps) => {
 
           <div className="space-y-2">
             <label htmlFor="foto" className="text-sm font-medium">
-              URL de la foto (opcional)
+              Foto del pincho (opcional)
             </label>
             <Input
               id="foto"
-              type="url"
-              value={formData.foto}
-              onChange={(e) => handleInputChange('foto', e.target.value)}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  setImageFile(file);
+                  handleInputChange('foto', ''); // Clear URL if file selected
+                }
+              }}
               className="h-12"
-              placeholder="https://ejemplo.com/imagen.jpg"
             />
+            <p className="text-xs text-muted-foreground">
+              Puedes tomar una foto con la cámara o seleccionar una imagen del dispositivo
+            </p>
           </div>
 
-          {formData.foto && (
+          {(formData.foto || imageFile) && (
             <div className="space-y-2">
               <label className="text-sm font-medium">Vista previa:</label>
               <img 
-                src={formData.foto} 
+                src={imageFile ? URL.createObjectURL(imageFile) : formData.foto} 
                 alt="Vista previa"
                 className="w-full max-w-xs h-32 object-cover rounded-md border"
                 onError={(e) => {
@@ -177,7 +204,7 @@ export const PinchoForm = ({ pincho, onSuccess }: PinchoFormProps) => {
             </Button>
             <Button 
               type="submit" 
-              disabled={loading || !formData.nombre.trim() || !formData.bar.trim()}
+              disabled={loading || !formData.nombre.trim() || !formData.bar.trim() || !formData.precio}
             >
               {loading ? 'Guardando...' : (pincho ? 'Actualizar' : 'Crear')}
             </Button>

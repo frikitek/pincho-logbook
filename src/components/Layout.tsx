@@ -1,7 +1,7 @@
 import { ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 import { LogOut, Plus, List, Download, Upload } from 'lucide-react';
-import { logout } from '@/lib/storage';
+import { logout, importData } from '@/lib/storage';
 import laurelLogo from '@/assets/laureados-logo.png';
 
 interface LayoutProps {
@@ -24,6 +24,33 @@ export const Layout = ({
   const handleLogout = () => {
     logout();
     onLogout();
+  };
+
+  const handleImportClick = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          try {
+            const success = importData(reader.result as string);
+            if (success) {
+              alert('Datos importados correctamente');
+              window.location.reload();
+            } else {
+              alert('Error: Archivo JSON no válido');
+            }
+          } catch (error) {
+            alert('Error al leer el archivo');
+          }
+        };
+        reader.readAsText(file);
+      }
+    };
+    input.click();
   };
 
   return (
@@ -87,7 +114,7 @@ export const Layout = ({
             <Button
               variant="ghost"
               size="sm"
-              onClick={onImport}
+              onClick={handleImportClick}
               className="flex-shrink-0"
             >
               <Upload className="h-4 w-4 mr-2" />

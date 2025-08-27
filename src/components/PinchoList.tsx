@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Star, Edit, Trash2, Plus } from 'lucide-react';
-import { Pincho, deletePincho } from '@/lib/storage';
+import { Pincho, deletePincho, canUserRate } from '@/lib/storage';
 import { useToast } from '@/hooks/use-toast';
 import { ValoracionDialog } from './ValoracionDialog';
 import { PinchoForm } from './PinchoForm';
@@ -134,9 +134,10 @@ export const PinchoList = ({ pinchos, onUpdate }: PinchoListProps) => {
                     size="sm" 
                     className="flex-1"
                     onClick={() => handleAddValoracion(pincho)}
+                    disabled={!canUserRate(pincho.id)}
                   >
                     <Plus className="h-3 w-3 mr-1" />
-                    Valorar
+                    {canUserRate(pincho.id) ? 'Valorar' : 'Ya valorado'}
                   </Button>
                   <Button 
                     size="sm" 

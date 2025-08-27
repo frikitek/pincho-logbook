@@ -13,6 +13,7 @@ export interface Valoracion {
   fecha: string; // ISO date string
   nota: number; // 1-5
   comentario?: string;
+  usuario: string; // email del usuario que valoró
 }
 
 export interface User {
@@ -47,6 +48,17 @@ export const isAuthenticated = (): boolean => {
 
 export const logout = (): void => {
   localStorage.removeItem(STORAGE_KEYS.AUTH);
+};
+
+export const getCurrentUser = (): string | null => {
+  const auth = localStorage.getItem(STORAGE_KEYS.AUTH);
+  if (!auth) return null;
+  try {
+    const { email } = JSON.parse(auth);
+    return email;
+  } catch {
+    return null;
+  }
 };
 
 // Pincho CRUD functions
@@ -91,28 +103,48 @@ export const deletePincho = (id: string): boolean => {
 };
 
 // Valoracion functions
-export const addValoracion = (pinchoId: string, valoracion: Omit<Valoracion, 'id'>): Valoracion | null => {
+export const addValoracion = (pinchoId: string, valoracion: Omit<Valoracion, 'id' | 'usuario'>): Valoracion | null => {
+  const currentUser = getCurrentUser();
+  if (!currentUser) return null;
+  
   const pinchos = getPinchos();
   const pincho = pinchos.find(p => p.id === pinchoId);
   if (!pincho) return null;
 
   const today = new Date().toDateString();
   const existingToday = pincho.valoraciones.find(v => 
-    new Date(v.fecha).toDateString() === today
+    new Date(v.fecha).toDateString() === today && v.usuario === currentUser
   );
   
   if (existingToday) {
-    throw new Error('Ya existe una valoración para hoy');
+    throw new Error('Ya has valorado este pincho hoy');
   }
 
   const newValoracion: Valoracion = {
     ...valoracion,
-    id: Date.now().toString()
+    id: Date.now().toString(),
+    usuario: currentUser
   };
 
   pincho.valoraciones.push(newValoracion);
   savePinchos(pinchos);
   return newValoracion;
+};
+
+export const canUserRate = (pinchoId: string): boolean => {
+  const currentUser = getCurrentUser();
+  if (!currentUser) return false;
+  
+  const pinchos = getPinchos();
+  const pincho = pinchos.find(p => p.id === pinchoId);
+  if (!pincho) return false;
+
+  const today = new Date().toDateString();
+  const existingToday = pincho.valoraciones.find(v => 
+    new Date(v.fecha).toDateString() === today && v.usuario === currentUser
+  );
+  
+  return !existingToday;
 };
 
 // Export/Import functions
