@@ -1,12 +1,31 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Star, Edit, Trash2, Plus } from 'lucide-react';
-import { Pincho, deletePincho, canUserRate, getCategoriaById } from '@/lib/storage';
+import { apiService } from '@/services/api';
 import { useToast } from '@/hooks/use-toast';
 import { ValoracionDialog } from './ValoracionDialog';
 import { PinchoForm } from './PinchoForm';
+
+interface Pincho {
+  id: string;
+  nombre: string;
+  bar: string;
+  precio: number;
+  categoria: number;
+  foto?: string;
+  valoraciones: any[];
+  categoria_nombre?: string;
+  categoria_color?: string;
+}
+
+interface Categoria {
+  id: number;
+  nombre: string;
+  color: string;
+  nivel: number;
+}
 
 interface PinchoListProps {
   pinchos: Pincho[];
@@ -17,10 +36,49 @@ export const PinchoList = ({ pinchos, onUpdate }: PinchoListProps) => {
   const [selectedPincho, setSelectedPincho] = useState<Pincho | null>(null);
   const [editingPincho, setEditingPincho] = useState<Pincho | null>(null);
   const [valoracionDialogOpen, setValoracionDialogOpen] = useState(false);
+  const [categorias, setCategorias] = useState<Categoria[]>([]);
+  const [canRateMap, setCanRateMap] = useState<Record<string, boolean>>({});
   const { toast } = useToast();
 
+  useEffect(() => {
+    loadCategorias();
+    loadCanRateStatus();
+  }, [pinchos]);
+
+  const loadCategorias = async () => {
+    try {
+      const data = await apiService.getCategorias();
+      setCategorias(data);
+    } catch (error: any) {
+      console.error('Error loading categories:', error);
+    }
+  };
+
+  const loadCanRateStatus = async () => {
+    try {
+      const canRatePromises = pinchos.map(async (pincho) => {
+        try {
+          const canRate = await apiService.canRate(pincho.id);
+          return { id: pincho.id, canRate };
+        } catch (error) {
+          return { id: pincho.id, canRate: false };
+        }
+      });
+      
+      const results = await Promise.all(canRatePromises);
+      const canRateMap = results.reduce((acc, { id, canRate }) => {
+        acc[id] = canRate;
+        return acc;
+      }, {} as Record<string, boolean>);
+      
+      setCanRateMap(canRateMap);
+    } catch (error: any) {
+      console.error('Error loading can rate status:', error);
+    }
+  };
+
   const getCategoriaInfo = (categoriaId: number) => {
-    const categoria = getCategoriaById(categoriaId);
+    const categoria = categorias.find(c => c.id === categoriaId);
     if (!categoria) {
       return { nombre: `Cat. ${categoriaId}`, color: '#6b7280' };
     }
@@ -34,13 +92,19 @@ export const PinchoList = ({ pinchos, onUpdate }: PinchoListProps) => {
 
   const handleDelete = async (id: string, nombre: string) => {
     if (confirm(`¿Estás seguro de que quieres eliminar "${nombre}"?`)) {
-      const success = deletePincho(id);
-      if (success) {
+      try {
+        await apiService.deletePincho(id);
         toast({
           title: "Pincho eliminado",
           description: `"${nombre}" ha sido eliminado correctamente.`
         });
         onUpdate();
+      } catch (error: any) {
+        toast({
+          title: "Error",
+          description: "No se pudo eliminar el pincho: " + error.message,
+          variant: "destructive"
+        });
       }
     }
   };
@@ -136,10 +200,10 @@ export const PinchoList = ({ pinchos, onUpdate }: PinchoListProps) => {
                     size="sm" 
                     className="flex-1"
                     onClick={() => handleAddValoracion(pincho)}
-                    disabled={!canUserRate(pincho.id)}
+                    disabled={!canRateMap[pincho.id]}
                   >
                     <Plus className="h-3 w-3 mr-1" />
-                    {canUserRate(pincho.id) ? 'Valorar' : 'Ya valorado'}
+                    {canRateMap[pincho.id] ? 'Valorar' : 'Ya valorado'}
                   </Button>
                   <Button 
                     size="sm" 
