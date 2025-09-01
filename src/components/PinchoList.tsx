@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Star, Edit, Trash2, Plus } from 'lucide-react';
-import { Pincho, deletePincho, canUserRate } from '@/lib/storage';
+import { Pincho, deletePincho, canUserRate, getCategoriaById } from '@/lib/storage';
 import { useToast } from '@/hooks/use-toast';
 import { ValoracionDialog } from './ValoracionDialog';
 import { PinchoForm } from './PinchoForm';
@@ -19,16 +19,12 @@ export const PinchoList = ({ pinchos, onUpdate }: PinchoListProps) => {
   const [valoracionDialogOpen, setValoracionDialogOpen] = useState(false);
   const { toast } = useToast();
 
-  const getCategoriaColor = (categoria: number) => {
-    const colors = [
-      'bg-red-100 text-red-800',
-      'bg-orange-100 text-orange-800', 
-      'bg-yellow-100 text-yellow-800',
-      'bg-green-100 text-green-800',
-      'bg-blue-100 text-blue-800',
-      'bg-purple-100 text-purple-800'
-    ];
-    return colors[categoria - 1] || colors[0];
+  const getCategoriaInfo = (categoriaId: number) => {
+    const categoria = getCategoriaById(categoriaId);
+    if (!categoria) {
+      return { nombre: `Cat. ${categoriaId}`, color: '#6b7280' };
+    }
+    return { nombre: categoria.nombre, color: categoria.color };
   };
 
   const getPromedio = (valoraciones: any[]) => {
@@ -98,8 +94,14 @@ export const PinchoList = ({ pinchos, onUpdate }: PinchoListProps) => {
               <CardHeader className="pb-3">
                 <div className="flex justify-between items-start">
                   <CardTitle className="text-lg line-clamp-1">{pincho.nombre}</CardTitle>
-                  <Badge className={`text-xs ${getCategoriaColor(pincho.categoria)}`}>
-                    Cat. {pincho.categoria}
+                  <Badge 
+                    className="text-xs"
+                    style={{ 
+                      backgroundColor: getCategoriaInfo(pincho.categoria).color,
+                      color: 'white'
+                    }}
+                  >
+                    {getCategoriaInfo(pincho.categoria).nombre}
                   </Badge>
                 </div>
                 <div className="space-y-1">

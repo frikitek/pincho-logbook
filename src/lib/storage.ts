@@ -2,6 +2,7 @@ export interface Categoria {
   id: number;
   nombre: string;
   color: string;
+  nivel: number; // Campo para ordenar de mejor a peor
 }
 
 export interface Pincho {
@@ -34,12 +35,12 @@ const STORAGE_KEYS = {
 };
 
 const DEFAULT_CATEGORIAS: Categoria[] = [
-  { id: 1, nombre: 'Categoría 1', color: '#ef4444' },
-  { id: 2, nombre: 'Categoría 2', color: '#f97316' },
-  { id: 3, nombre: 'Categoría 3', color: '#eab308' },
-  { id: 4, nombre: 'Categoría 4', color: '#22c55e' },
-  { id: 5, nombre: 'Categoría 5', color: '#3b82f6' },
-  { id: 6, nombre: 'Categoría 6', color: '#a855f7' }
+  { id: 1, nombre: 'Excelente', color: '#22c55e', nivel: 1 },
+  { id: 2, nombre: 'Muy Bueno', color: '#3b82f6', nivel: 2 },
+  { id: 3, nombre: 'Bueno', color: '#eab308', nivel: 3 },
+  { id: 4, nombre: 'Regular', color: '#f97316', nivel: 4 },
+  { id: 5, nombre: 'Malo', color: '#ef4444', nivel: 5 },
+  { id: 6, nombre: 'Muy Malo', color: '#a855f7', nivel: 6 }
 ];
 
 const VALID_USERS: User[] = [
@@ -167,6 +168,16 @@ export const canUserRate = (pinchoId: string): boolean => {
 export const getCategorias = (): Categoria[] => {
   const categorias = localStorage.getItem(STORAGE_KEYS.CATEGORIAS);
   return categorias ? JSON.parse(categorias) : DEFAULT_CATEGORIAS;
+};
+
+export const getCategoriasOrdenadas = (): Categoria[] => {
+  const categorias = getCategorias();
+  return categorias.sort((a, b) => a.nivel - b.nivel);
+};
+
+export const getCategoriaById = (id: number): Categoria | null => {
+  const categorias = getCategorias();
+  return categorias.find(c => c.id === id) || null;
 };
 
 export const saveCategorias = (categorias: Categoria[]): void => {

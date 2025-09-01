@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Pincho, createPincho, updatePincho, getCategorias } from '@/lib/storage';
+import { Pincho, createPincho, updatePincho, getCategoriasOrdenadas } from '@/lib/storage';
 import { useToast } from '@/hooks/use-toast';
 
 interface PinchoFormProps {
@@ -23,7 +23,7 @@ export const PinchoForm = ({ pincho, onSuccess }: PinchoFormProps) => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
-  const categorias = getCategorias();
+  const categorias = getCategoriasOrdenadas();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -154,7 +154,8 @@ export const PinchoForm = ({ pincho, onSuccess }: PinchoFormProps) => {
                           className="w-3 h-3 rounded-full"
                           style={{ backgroundColor: categoria.color }}
                         />
-                        {categoria.nombre}
+                        <span>{categoria.nombre}</span>
+                        <span className="text-xs text-muted-foreground">(Nivel {categoria.nivel})</span>
                       </div>
                     </SelectItem>
                   ))}

@@ -1,6 +1,6 @@
-import { ReactNode } from 'react';
+import { ReactNode, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { LogOut, Plus, List, Download, Upload, Settings } from 'lucide-react';
+import { LogOut, Plus, List, Download, Upload, Settings, RefreshCw, Share2 } from 'lucide-react';
 import { logout, importData } from '@/lib/storage';
 import laurelLogo from '@/assets/laureados-logo.png';
 
@@ -10,7 +10,8 @@ interface LayoutProps {
   currentView: string;
   onNavigate: (view: string) => void;
   onExport: () => void;
-  onImport: () => void;
+  onImport: (file: File) => void;
+  onSync: () => void;
 }
 
 export const Layout = ({ 
@@ -19,42 +20,40 @@ export const Layout = ({
   currentView, 
   onNavigate, 
   onExport, 
-  onImport 
+  onImport,
+  onSync
 }: LayoutProps) => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const handleLogout = () => {
     logout();
     onLogout();
   };
 
   const handleImportClick = () => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.json';
-    input.onchange = (e) => {
-      const file = (e.target as HTMLInputElement).files?.[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = () => {
-          try {
-            const success = importData(reader.result as string);
-            if (success) {
-              alert('Datos importados correctamente');
-              window.location.reload();
-            } else {
-              alert('Error: Archivo JSON no válido');
-            }
-          } catch (error) {
-            alert('Error al leer el archivo');
-          }
-        };
-        reader.readAsText(file);
-      }
-    };
-    input.click();
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      onImport(file);
+      // Reset the input value so the same file can be selected again
+      e.target.value = '';
+    }
   };
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Hidden file input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".json"
+        onChange={handleFileChange}
+        className="hidden"
+      />
+
       {/* Header */}
       <header className="bg-primary text-primary-foreground shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -128,6 +127,15 @@ export const Layout = ({
             >
               <Upload className="h-4 w-4 mr-2" />
               Importar
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onSync}
+              className="flex-shrink-0"
+            >
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Sincronizar
             </Button>
           </div>
         </div>

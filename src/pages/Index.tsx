@@ -92,6 +92,32 @@ const Index = () => {
     input.click();
   };
 
+  const handleSync = () => {
+    try {
+      const data = exportData();
+      const blob = new Blob([data], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `laureados-sync-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      toast({
+        title: "Datos exportados para sincronización",
+        description: "Descarga el archivo y compártelo con otros dispositivos para sincronizar."
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "No se pudieron exportar los datos para sincronización.",
+        variant: "destructive"
+      });
+    }
+  };
+
   if (!authenticated) {
     return <Login onLoginSuccess={handleLoginSuccess} />;
   }
@@ -122,6 +148,7 @@ const Index = () => {
       onLogout={handleLogout}
       onExport={handleExport}
       onImport={handleImport}
+      onSync={handleSync}
     >
       {renderCurrentView()}
     </Layout>
