@@ -30,7 +30,10 @@ app.use('/pinchos', pinchosRoutes);
 app.use('/categorias', categoriasRoutes);
 app.use('/valoraciones', valoracionesRoutes);
 
-// Health
+// Base and health routes
+app.get('/', (_req, res) => {
+  res.json({ ok: true, name: 'Laureados API', ts: new Date().toISOString() });
+});
 app.get('/health', (_req, res) => {
   res.json({ status: 'OK', ts: new Date().toISOString() });
 });
