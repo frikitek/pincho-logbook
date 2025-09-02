@@ -3,18 +3,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Star } from 'lucide-react';
-import { apiService } from '@/services/api';
+import { Pincho, addValoracion } from '@/lib/storage';
 import { useToast } from '@/hooks/use-toast';
-
-interface Pincho {
-  id: string;
-  nombre: string;
-  bar: string;
-  precio: number;
-  categoria: number;
-  foto?: string;
-  valoraciones: any[];
-}
 
 interface ValoracionDialogProps {
   pincho: Pincho | null;
@@ -35,8 +25,8 @@ export const ValoracionDialog = ({ pincho, open, onOpenChange, onSuccess }: Valo
     
     setLoading(true);
     try {
-      await apiService.addValoracion({
-        pincho_id: pincho.id,
+      await addValoracion(pincho.id, {
+        fecha: new Date().toISOString(),
         nota,
         comentario: comentario.trim() || undefined
       });

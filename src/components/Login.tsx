@@ -1,10 +1,9 @@
 import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { authenticate } from '@/lib/storage';
 import { useToast } from '@/hooks/use-toast';
-import { apiService } from '@/services/api';
 import laurelLogo from '@/assets/laureados-logo.png';
 
 interface LoginProps {
@@ -22,16 +21,24 @@ export const Login = ({ onLoginSuccess }: LoginProps) => {
     setLoading(true);
 
     try {
-      await apiService.login(email, password);
+      const success = authenticate(email, password);
+      if (success) {
+        toast({
+          title: "¡Bienvenido!",
+          description: "Has iniciado sesión correctamente.",
+        });
+        onLoginSuccess();
+      } else {
+        toast({
+          title: "Error de autenticación",
+          description: "Credenciales incorrectas. Verifica tu email y contraseña.",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
       toast({
-        title: "¡Bienvenido!",
-        description: "Has iniciado sesión correctamente.",
-      });
-      onLoginSuccess();
-    } catch (error: any) {
-      toast({
-        title: "Error de autenticación",
-        description: error.message || "Credenciales incorrectas. Verifica tu email y contraseña.",
+        title: "Error",
+        description: "Ha ocurrido un error inesperado.",
         variant: "destructive"
       });
     } finally {
@@ -59,35 +66,39 @@ export const Login = ({ onLoginSuccess }: LoginProps) => {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <label htmlFor="email" className="text-sm font-medium">
+                  Email
+                </label>
                 <Input
                   id="email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="tu@email.com"
                   required
-                  disabled={loading}
+                  className="h-12"
+                  placeholder="usuario@laurelados.com"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="password">Contraseña</Label>
+                <label htmlFor="password" className="text-sm font-medium">
+                  Contraseña
+                </label>
                 <Input
                   id="password"
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
                   required
-                  disabled={loading}
+                  className="h-12"
+                  placeholder="Introduce tu contraseña"
                 />
               </div>
               <Button 
                 type="submit" 
-                className="w-full" 
+                className="w-full h-12 text-lg" 
                 disabled={loading}
               >
-                {loading ? "Iniciando sesión..." : "Iniciar Sesión"}
+                {loading ? 'Iniciando...' : 'Acceder'}
               </Button>
             </form>
           </CardContent>

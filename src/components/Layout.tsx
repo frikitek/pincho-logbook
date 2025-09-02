@@ -1,7 +1,7 @@
 import { ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 import { LogOut, Plus, List, Settings } from 'lucide-react';
-import { apiService } from '@/services/api';
+import { logout } from '@/lib/storage';
 import laurelLogo from '@/assets/laureados-logo.png';
 
 interface LayoutProps {
@@ -18,7 +18,7 @@ export const Layout = ({
   onNavigate
 }: LayoutProps) => {
   const handleLogout = () => {
-    apiService.logout();
+    logout();
     onLogout();
   };
 

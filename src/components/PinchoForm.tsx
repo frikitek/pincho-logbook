@@ -1,27 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { apiService } from '@/services/api';
+import { Pincho, createPincho, updatePincho, getCategoriasOrdenadas } from '@/lib/storage';
 import { useToast } from '@/hooks/use-toast';
-
-interface Pincho {
-  id?: string;
-  nombre: string;
-  bar: string;
-  precio: number;
-  categoria: number;
-  foto?: string;
-}
-
-interface Categoria {
-  id: number;
-  nombre: string;
-  color: string;
-  nivel: number;
-}
 
 interface PinchoFormProps {
   pincho?: Pincho;
@@ -38,25 +22,8 @@ export const PinchoForm = ({ pincho, onSuccess }: PinchoFormProps) => {
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
-  const [categorias, setCategorias] = useState<Categoria[]>([]);
   const { toast } = useToast();
-
-  useEffect(() => {
-    loadCategorias();
-  }, []);
-
-  const loadCategorias = async () => {
-    try {
-      const data = await apiService.getCategorias();
-      setCategorias(data.sort((a: Categoria, b: Categoria) => a.nivel - b.nivel));
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: "No se pudieron cargar las categorías: " + error.message,
-        variant: "destructive"
-      });
-    }
-  };
+  const categorias = getCategoriasOrdenadas();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,26 +47,28 @@ export const PinchoForm = ({ pincho, onSuccess }: PinchoFormProps) => {
         foto
       };
 
-      if (pincho?.id) {
+      if (pincho) {
         // Update existing pincho
-        await apiService.updatePincho(pincho.id, pinchoData);
-        toast({
-          title: "Pincho actualizado",
-          description: `"${formData.nombre}" ha sido actualizado correctamente.`
-        });
+        const updated = updatePincho(pincho.id, pinchoData);
+        if (updated) {
+          toast({
+            title: "Pincho actualizado",
+            description: `"${formData.nombre}" ha sido actualizado correctamente.`
+          });
+        }
       } else {
         // Create new pincho
-        await apiService.createPincho(pinchoData);
+        createPincho(pinchoData);
         toast({
           title: "Pincho creado",
           description: `"${formData.nombre}" ha sido creado correctamente.`
         });
       }
       onSuccess();
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: "Error",
-        description: "Ha ocurrido un error al guardar el pincho: " + error.message,
+        description: "Ha ocurrido un error al guardar el pincho.",
         variant: "destructive"
       });
     } finally {
