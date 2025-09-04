@@ -3,8 +3,19 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 
 export default async function handler(req, res) {
+  console.log('Login endpoint called:', {
+    method: req.method,
+    url: req.url,
+    headers: req.headers,
+    body: req.body
+  });
+
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method Not Allowed' });
+    return res.status(405).json({ 
+      error: 'Method Not Allowed',
+      receivedMethod: req.method,
+      expectedMethod: 'POST'
+    });
   }
 
   const { email, password } = req.body || {};
@@ -42,7 +53,13 @@ export default async function handler(req, res) {
 
     return res.status(200).json({ success: true, token, user: { id: user.id, email: user.email } });
   } catch (e) {
-    return res.status(500).json({ error: 'Error interno del servidor', detail: e.message });
+    console.error('Login error:', e);
+    return res.status(500).json({ 
+      error: 'Error interno del servidor', 
+      detail: e.message,
+      code: e.code,
+      name: e.name
+    });
   } finally {
     try { await client.end(); } catch {}
   }
