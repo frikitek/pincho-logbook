@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Categoria, getCategoriasOrdenadas, updateCategoria } from '@/lib/storage';
+import { Categoria, getCategorias, updateCategoria } from '@/lib/storage';
 import { useToast } from '@/hooks/use-toast';
 import { Palette } from 'lucide-react';
 
@@ -14,7 +14,10 @@ export const CategoriasManager = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    setCategorias(getCategoriasOrdenadas());
+    (async () => {
+      const cats = await getCategorias();
+      setCategorias([...cats].sort((a, b) => a.nivel - b.nivel));
+    })();
   }, []);
 
   const handleEdit = (categoria: Categoria) => {
@@ -22,17 +25,21 @@ export const CategoriasManager = () => {
     setEditData({ nombre: categoria.nombre, color: categoria.color, nivel: categoria.nivel });
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!editingId) return;
-    
-    const updated = updateCategoria(editingId, editData);
-    if (updated) {
-      setCategorias(getCategoriasOrdenadas());
-      setEditingId(null);
-      toast({
-        title: "Categoría actualizada",
-        description: `"${editData.nombre}" ha sido actualizada correctamente.`
-      });
+    try {
+      const updated = await updateCategoria(editingId, editData);
+      if (updated) {
+        const cats = await getCategorias();
+        setCategorias([...cats].sort((a, b) => a.nivel - b.nivel));
+        setEditingId(null);
+        toast({
+          title: "Categoría actualizada",
+          description: `"${editData.nombre}" ha sido actualizada correctamente.`
+        });
+      }
+    } catch (e: any) {
+      toast({ title: 'Error', description: e.message || 'No se pudo actualizar', variant: 'destructive' });
     }
   };
 
