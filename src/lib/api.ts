@@ -112,8 +112,9 @@ export const api = {
   },
   login: async (email: string, password: string) => {
     console.log('API login called with:', { email, password });
-    const data = await request<{ token: string; user: any }>('/auth/login', 'POST', { email, password });
-    setAuthToken(data.token);
+    const data = await request<{ success: boolean; message: string; user: any }>('/auth/login', 'POST', { email, password });
+    // For now, just simulate a token for testing
+    setAuthToken('test-token-' + Date.now());
     return data;
   },
   me: () => request('/auth/me'),
