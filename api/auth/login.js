@@ -1,8 +1,8 @@
-import { Client } from 'pg';
-import jwt from 'jsonwebtoken';
-import bcrypt from 'bcryptjs';
+const { Client } = require('pg');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   console.log('Login endpoint called:', {
     method: req.method,
     url: req.url,

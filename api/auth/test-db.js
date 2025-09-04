@@ -1,6 +1,6 @@
-import { Client } from 'pg';
+const { Client } = require('pg');
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   console.log('Test DB endpoint called:', {
     method: req.method,
     url: req.url
