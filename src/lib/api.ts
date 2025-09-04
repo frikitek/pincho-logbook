@@ -50,6 +50,11 @@ async function request<T>(path: string, method: HttpMethod = 'GET', body?: unkno
 
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
+    console.error('API Error Response:', {
+      status: res.status,
+      statusText: res.statusText,
+      data: data
+    });
     const message = (data && (data.error || data.message)) || `HTTP ${res.status}`;
     throw new Error(message);
   }
@@ -90,6 +95,11 @@ export const api = {
   canRate: (pinchoId: string) => request<{ canRate: boolean }>(`/valoraciones/can-rate/${pinchoId}`),
 
   // Auth
+  testDb: async () => {
+    console.log('API test DB called');
+    const data = await request<{ message: string; userCount: number }>('/auth/test-db', 'GET');
+    return data;
+  },
   testLogin: async (email: string, password: string) => {
     console.log('API test login called with:', { email, password });
     const data = await request<{ message: string; method: string }>('/auth/test-login', 'POST', { email, password });
