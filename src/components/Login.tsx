@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { authenticate } from '@/lib/storage';
+import { api } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 import laurelLogo from '@/assets/laureados-logo.png';
 
@@ -21,24 +21,18 @@ export const Login = ({ onLoginSuccess }: LoginProps) => {
     setLoading(true);
 
     try {
-      const success = authenticate(email, password);
-      if (success) {
+      await api.login(email, password);
+      {
         toast({
           title: "¡Bienvenido!",
           description: "Has iniciado sesión correctamente.",
         });
         onLoginSuccess();
-      } else {
-        toast({
-          title: "Error de autenticación",
-          description: "Credenciales incorrectas. Verifica tu email y contraseña.",
-          variant: "destructive"
-        });
       }
-    } catch (error) {
+    } catch (error: any) {
       toast({
-        title: "Error",
-        description: "Ha ocurrido un error inesperado.",
+        title: "Error de autenticación",
+        description: error.message || "Credenciales incorrectas.",
         variant: "destructive"
       });
     } finally {

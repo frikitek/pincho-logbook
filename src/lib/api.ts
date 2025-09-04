@@ -2,10 +2,31 @@ const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
 
+let authToken: string | null = null;
+
+export function setAuthToken(token: string) {
+  authToken = token;
+  localStorage.setItem('auth_token', token);
+}
+
+export function getAuthToken(): string | null {
+  if (!authToken) authToken = localStorage.getItem('auth_token');
+  return authToken;
+}
+
+export function clearAuthToken() {
+  authToken = null;
+  localStorage.removeItem('auth_token');
+}
+
 async function request<T>(path: string, method: HttpMethod = 'GET', body?: unknown): Promise<T> {
+  const token = getAuthToken();
   const res = await fetch(`${API_URL}${path}`, {
     method,
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
     body: body ? JSON.stringify(body) : undefined,
   });
 
@@ -49,6 +70,15 @@ export const api = {
   // Valoraciones
   addValoracion: (payload: any) => request<any>('/valoraciones', 'POST', payload),
   canRate: (pinchoId: string) => request<{ canRate: boolean }>(`/valoraciones/can-rate/${pinchoId}`),
+
+  // Auth
+  login: async (email: string, password: string) => {
+    const data = await request<{ token: string; user: any }>('/auth/login', 'POST', { email, password });
+    setAuthToken(data.token);
+    return data;
+  },
+  me: () => request('/auth/me'),
+  logout: () => clearAuthToken(),
 };
 
 
