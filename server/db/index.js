@@ -2,10 +2,11 @@ const { Pool } = require('pg');
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
-  max: 20, // máximo número de conexiones en el pool
-  idleTimeoutMillis: 30000, // tiempo máximo que una conexión puede estar inactiva
-  connectionTimeoutMillis: 2000, // tiempo máximo para establecer una conexión
+  // For serverless environments + Supabase pooler, enforce TLS but ignore self-signed chain
+  ssl: { rejectUnauthorized: false },
+  max: 10,
+  idleTimeoutMillis: 10000,
+  connectionTimeoutMillis: 5000,
 });
 
 // Función para ejecutar queries
