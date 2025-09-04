@@ -28,16 +28,20 @@ export default async function handler(req, res) {
 
   const { email, password } = req.body || {};
   if (!email || !password) {
+    res.setHeader('Access-Control-Allow-Origin', '*');
     return res.status(400).json({ error: 'Email y contraseña son requeridos' });
   }
 
+  console.log('Attempting database connection...');
   const client = new Client({
     connectionString: process.env.DATABASE_URL,
     ssl: { rejectUnauthorized: false },
   });
 
   try {
+    console.log('Connecting to database...');
     await client.connect();
+    console.log('Database connected successfully');
     const userResult = await client.query(
       'SELECT id, email, password_hash FROM users WHERE email = $1',
       [email]
@@ -63,11 +67,13 @@ export default async function handler(req, res) {
     return res.status(200).json({ success: true, token, user: { id: user.id, email: user.email } });
   } catch (e) {
     console.error('Login error:', e);
+    res.setHeader('Access-Control-Allow-Origin', '*');
     return res.status(500).json({ 
       error: 'Error interno del servidor', 
       detail: e.message,
       code: e.code,
-      name: e.name
+      name: e.name,
+      stack: e.stack
     });
   } finally {
     try { await client.end(); } catch {}
