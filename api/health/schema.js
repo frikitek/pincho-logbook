@@ -1,5 +1,7 @@
 import { Client } from 'pg';
 
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+
 export default async function handler(_req, res) {
   const client = new Client({
     connectionString: process.env.DATABASE_URL,
