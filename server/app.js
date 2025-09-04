@@ -45,6 +45,27 @@ app.get('/api/health/db', async (_req, res) => {
   }
 });
 
+// Schema diagnostics
+app.get('/api/health/schema', async (_req, res) => {
+  try {
+    const tables = await query(
+      `SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' ORDER BY table_name`
+    );
+    const out = { tables: tables.rows.map(r => r.table_name) };
+    // Optional counts
+    const tryCount = async (name) => {
+      try { const r = await query(`SELECT COUNT(*)::int AS count FROM ${name}`); return r.rows[0].count; } catch { return null; }
+    };
+    out.categorias = await tryCount('categorias');
+    out.pinchos = await tryCount('pinchos');
+    out.valoraciones = await tryCount('valoraciones');
+    out.users = await tryCount('users');
+    res.json(out);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 module.exports = app;
 
 
