@@ -24,14 +24,14 @@ app.use(express.urlencoded({ extended: true }));
 // Estáticos
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Rutas API sin prefijo (Vercel ya usa /api en la función)
-app.use('/auth', authRoutes);
-app.use('/pinchos', pinchosRoutes);
-app.use('/categorias', categoriasRoutes);
-app.use('/valoraciones', valoracionesRoutes);
+// Rutas API con prefijo /api (Vercel mantiene el path completo)
+app.use('/api/auth', authRoutes);
+app.use('/api/pinchos', pinchosRoutes);
+app.use('/api/categorias', categoriasRoutes);
+app.use('/api/valoraciones', valoracionesRoutes);
 
 // Health
-app.get('/health', (_req, res) => {
+app.get('/api/health', (_req, res) => {
   res.json({ status: 'OK', ts: new Date().toISOString() });
 });
 
