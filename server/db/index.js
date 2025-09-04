@@ -1,3 +1,5 @@
+// Relax TLS verification for serverless environment with Supabase pooler
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 const { Pool } = require('pg');
 
 const pool = new Pool({
