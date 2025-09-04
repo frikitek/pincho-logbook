@@ -91,7 +91,7 @@ export const getPinchos = async (): Promise<Pincho[]> => {
     bar: p.bar,
     precio: Number(p.precio) || 0,
     categoria: p.categoria ?? p.categoria_id,
-    foto: p.foto ?? p.foto_url || undefined,
+    foto: (p.foto ?? p.foto_url) ?? undefined,
     valoraciones: p.valoraciones || [],
   }));
 };
