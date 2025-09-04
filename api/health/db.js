@@ -1,21 +1,21 @@
-import { Pool } from 'pg';
+import { Client } from 'pg';
 
 export default async function handler(_req, res) {
   const connectionString = process.env.DATABASE_URL;
-  const pool = new Pool({
+  const client = new Client({
     connectionString,
-    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
-    max: 1,
-    connectionTimeoutMillis: 3000,
-    idleTimeoutMillis: 3000,
+    ssl: { rejectUnauthorized: false },
+    statement_timeout: 5000,
+    connectionTimeoutMillis: 5000,
   });
 
   try {
-    const r = await pool.query('SELECT NOW() as now');
+    await client.connect();
+    const r = await client.query('SELECT NOW() as now');
     res.status(200).json({ ok: true, now: r.rows[0].now });
   } catch (e) {
-    res.status(500).json({ ok: false, error: e.message });
+    res.status(500).json({ ok: false, error: e.message, code: e.code, name: e.name });
   } finally {
-    await pool.end().catch(() => {});
+    try { await client.end(); } catch {}
   }
 }
