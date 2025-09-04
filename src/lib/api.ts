@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_API_URL || '/api';
+const API_URL = import.meta.env.VITE_API_URL || 'https://pincho-logbook.vercel.app/api';
 
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
 
