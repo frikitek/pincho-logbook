@@ -11,6 +11,7 @@ const categoriasRoutes = require('./routes/categorias');
 const valoracionesRoutes = require('./routes/valoraciones');
 
 const app = express();
+const { query } = require('./db');
 
 // Seguridad y middlewares
 const limiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 100 });
@@ -32,6 +33,16 @@ app.use('/api/valoraciones', valoracionesRoutes);
 // Health
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'OK', ts: new Date().toISOString() });
+});
+
+// DB health
+app.get('/api/health/db', async (_req, res) => {
+  try {
+    const r = await query('SELECT NOW() as now');
+    res.json({ ok: true, now: r.rows[0].now });
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message });
+  }
 });
 
 module.exports = app;
