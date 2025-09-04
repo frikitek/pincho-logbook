@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Star, Edit, Trash2, Plus } from 'lucide-react';
-import { Pincho, deletePincho, canUserRate, getCategoriaById } from '@/lib/storage';
+import { Pincho, deletePincho, canUserRate, getCategorias } from '@/lib/storage';
 import { useToast } from '@/hooks/use-toast';
 import { ValoracionDialog } from './ValoracionDialog';
 import { PinchoForm } from './PinchoForm';
@@ -17,10 +17,18 @@ export const PinchoList = ({ pinchos, onUpdate }: PinchoListProps) => {
   const [selectedPincho, setSelectedPincho] = useState<Pincho | null>(null);
   const [editingPincho, setEditingPincho] = useState<Pincho | null>(null);
   const [valoracionDialogOpen, setValoracionDialogOpen] = useState(false);
+  const [categorias, setCategorias] = useState<any[]>([]);
   const { toast } = useToast();
 
+  useEffect(() => {
+    (async () => {
+      const cats = await getCategorias();
+      setCategorias(cats);
+    })();
+  }, []);
+
   const getCategoriaInfo = (categoriaId: number) => {
-    const categoria = getCategoriaById(categoriaId);
+    const categoria = categorias.find((c: any) => c.id === categoriaId);
     if (!categoria) {
       return { nombre: `Cat. ${categoriaId}`, color: '#6b7280' };
     }

@@ -16,8 +16,9 @@ const Index = () => {
     loadPinchos();
   }, []);
 
-  const loadPinchos = () => {
-    setPinchos(getPinchos());
+  const loadPinchos = async () => {
+    const data = await getPinchos();
+    setPinchos(data);
   };
 
   const handleLoginSuccess = () => {

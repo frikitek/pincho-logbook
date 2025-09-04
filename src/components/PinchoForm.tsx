@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Pincho, createPincho, updatePincho, getCategoriasOrdenadas } from '@/lib/storage';
+import { Pincho, createPincho, updatePincho, getCategorias } from '@/lib/storage';
 import { useToast } from '@/hooks/use-toast';
 
 interface PinchoFormProps {
@@ -23,7 +23,14 @@ export const PinchoForm = ({ pincho, onSuccess }: PinchoFormProps) => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
-  const categorias = getCategoriasOrdenadas();
+  const [categorias, setCategorias] = useState<any[]>([]);
+
+  useEffect(() => {
+    (async () => {
+      const cats = await getCategorias();
+      setCategorias(cats);
+    })();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,7 +56,7 @@ export const PinchoForm = ({ pincho, onSuccess }: PinchoFormProps) => {
 
       if (pincho) {
         // Update existing pincho
-        const updated = updatePincho(pincho.id, pinchoData);
+        const updated = await updatePincho(pincho.id, pinchoData);
         if (updated) {
           toast({
             title: "Pincho actualizado",
@@ -58,7 +65,7 @@ export const PinchoForm = ({ pincho, onSuccess }: PinchoFormProps) => {
         }
       } else {
         // Create new pincho
-        createPincho(pinchoData);
+        await createPincho(pinchoData);
         toast({
           title: "Pincho creado",
           description: `"${formData.nombre}" ha sido creado correctamente.`

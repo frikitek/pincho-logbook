@@ -79,95 +79,90 @@ export const getCurrentUser = (): string | null => {
 };
 
 // Pincho CRUD functions
-export const getPinchos = (): Pincho[] => {
-  const pinchos = localStorage.getItem(STORAGE_KEYS.PINCHOS);
-  return pinchos ? JSON.parse(pinchos) : [];
+import { api } from './api';
+
+export const getPinchos = async (): Promise<Pincho[]> => {
+  const res = await api.getPinchos();
+  // API can return { pinchos } or array directly depending on backend
+  const list = Array.isArray(res) ? res : (res as any).pinchos;
+  return (list ?? []).map((p: any) => ({
+    id: p.id,
+    nombre: p.nombre,
+    bar: p.bar,
+    precio: Number(p.precio) || 0,
+    categoria: p.categoria,
+    foto: p.foto || undefined,
+    valoraciones: p.valoraciones || [],
+  }));
 };
 
-export const savePinchos = (pinchos: Pincho[]): void => {
-  localStorage.setItem(STORAGE_KEYS.PINCHOS, JSON.stringify(pinchos));
+export const savePinchos = (_pinchos: Pincho[]): void => {
+  // No-op: persist handled by backend
 };
 
-export const createPincho = (pincho: Omit<Pincho, 'id' | 'valoraciones'>): Pincho => {
-  const newPincho: Pincho = {
-    ...pincho,
-    id: Date.now().toString(),
-    valoraciones: []
+export const createPincho = async (pincho: Omit<Pincho, 'id' | 'valoraciones'>): Promise<Pincho> => {
+  const created = await api.createPincho(pincho);
+  return {
+    id: created.id,
+    nombre: created.nombre,
+    bar: created.bar,
+    precio: Number(created.precio) || 0,
+    categoria: created.categoria,
+    foto: created.foto || undefined,
+    valoraciones: created.valoraciones || [],
   };
-  const pinchos = getPinchos();
-  pinchos.push(newPincho);
-  savePinchos(pinchos);
-  return newPincho;
 };
 
-export const updatePincho = (id: string, updates: Partial<Omit<Pincho, 'id' | 'valoraciones'>>): Pincho | null => {
-  const pinchos = getPinchos();
-  const index = pinchos.findIndex(p => p.id === id);
-  if (index === -1) return null;
-  
-  pinchos[index] = { ...pinchos[index], ...updates };
-  savePinchos(pinchos);
-  return pinchos[index];
+export const updatePincho = async (id: string, updates: Partial<Omit<Pincho, 'id' | 'valoraciones'>>): Promise<Pincho | null> => {
+  const updated = await api.updatePincho(id, updates);
+  return updated
+    ? {
+        id: updated.id,
+        nombre: updated.nombre,
+        bar: updated.bar,
+        precio: Number(updated.precio) || 0,
+        categoria: updated.categoria,
+        foto: updated.foto || undefined,
+        valoraciones: updated.valoraciones || [],
+      }
+    : null;
 };
 
-export const deletePincho = (id: string): boolean => {
-  const pinchos = getPinchos();
-  const filteredPinchos = pinchos.filter(p => p.id !== id);
-  if (filteredPinchos.length === pinchos.length) return false;
-  
-  savePinchos(filteredPinchos);
+export const deletePincho = async (id: string): Promise<boolean> => {
+  await api.deletePincho(id);
   return true;
 };
 
 // Valoracion functions
-export const addValoracion = (pinchoId: string, valoracion: Omit<Valoracion, 'id' | 'usuario'>): Valoracion | null => {
+export const addValoracion = async (pinchoId: string, valoracion: Omit<Valoracion, 'id' | 'usuario'>): Promise<Valoracion | null> => {
   const currentUser = getCurrentUser();
   if (!currentUser) return null;
-  
-  const pinchos = getPinchos();
-  const pincho = pinchos.find(p => p.id === pinchoId);
-  if (!pincho) return null;
-
-  const today = new Date().toDateString();
-  const existingToday = pincho.valoraciones.find(v => 
-    new Date(v.fecha).toDateString() === today && v.usuario === currentUser
-  );
-  
-  if (existingToday) {
-    throw new Error('Ya has valorado este pincho hoy');
-  }
-
-  const newValoracion: Valoracion = {
-    ...valoracion,
-    id: Date.now().toString(),
-    usuario: currentUser
+  const created = await api.addValoracion({
+    pincho_id: pinchoId,
+    fecha: valoracion.fecha,
+    nota: valoracion.nota,
+    comentario: valoracion.comentario ?? undefined,
+    usuario: currentUser,
+  });
+  return {
+    id: created.id,
+    fecha: created.fecha,
+    nota: created.nota,
+    comentario: created.comentario ?? undefined,
+    usuario: created.usuario,
   };
-
-  pincho.valoraciones.push(newValoracion);
-  savePinchos(pinchos);
-  return newValoracion;
 };
 
-export const canUserRate = (pinchoId: string): boolean => {
-  const currentUser = getCurrentUser();
-  if (!currentUser) return false;
-  
-  const pinchos = getPinchos();
-  const pincho = pinchos.find(p => p.id === pinchoId);
-  if (!pincho) return false;
-
-  const today = new Date().toDateString();
-  const existingToday = pincho.valoraciones.find(v => 
-    new Date(v.fecha).toDateString() === today && v.usuario === currentUser
-  );
-  
-  return !existingToday;
+export const canUserRate = async (pinchoId: string): Promise<boolean> => {
+  const res = await api.canRate(pinchoId);
+  return !!res?.canRate;
 };
 
 // Categoria functions
-export const getCategorias = (): Categoria[] => {
-  const categorias = localStorage.getItem(STORAGE_KEYS.CATEGORIAS);
-  return categorias ? JSON.parse(categorias) : DEFAULT_CATEGORIAS;
+export const getCategorias = async (): Promise<Categoria[]> => {
+  const res = await api.getCategorias();
+  const list = Array.isArray(res) ? res : (res as any).categorias;
+  return (list ?? DEFAULT_CATEGORIAS) as Categoria[];
 };
 
 export const getCategoriasOrdenadas = (): Categoria[] => {
@@ -184,14 +179,9 @@ export const saveCategorias = (categorias: Categoria[]): void => {
   localStorage.setItem(STORAGE_KEYS.CATEGORIAS, JSON.stringify(categorias));
 };
 
-export const updateCategoria = (id: number, updates: Partial<Omit<Categoria, 'id'>>): Categoria | null => {
-  const categorias = getCategorias();
-  const index = categorias.findIndex(c => c.id === id);
-  if (index === -1) return null;
-  
-  categorias[index] = { ...categorias[index], ...updates };
-  saveCategorias(categorias);
-  return categorias[index];
+export const updateCategoria = async (id: number, updates: Partial<Omit<Categoria, 'id'>>): Promise<Categoria | null> => {
+  const updated = await api.updateCategoria(id, updates);
+  return updated ?? null;
 };
 
 // Export/Import functions
