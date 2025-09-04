@@ -21,13 +21,9 @@ export const Login = ({ onLoginSuccess }: LoginProps) => {
     setLoading(true);
 
     try {
-      // Test database connection first
-      const dbResult = await api.testDb();
-      console.log('DB test result:', dbResult);
-      
-      // Test the endpoint first
-      const testResult = await api.testLogin(email, password);
-      console.log('Test result:', testResult);
+      // Test simple login first
+      const simpleResult = await api.simpleLogin(email, password);
+      console.log('Simple login result:', simpleResult);
       
       await api.login(email, password);
       {

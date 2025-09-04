@@ -100,6 +100,11 @@ export const api = {
     const data = await request<{ message: string; userCount: number }>('/auth/test-db', 'GET');
     return data;
   },
+  simpleLogin: async (email: string, password: string) => {
+    console.log('API simple login called with:', { email, password });
+    const data = await request<{ success: boolean; message: string; user: any }>('/auth/simple-login', 'POST', { email, password });
+    return data;
+  },
   testLogin: async (email: string, password: string) => {
     console.log('API test login called with:', { email, password });
     const data = await request<{ message: string; method: string }>('/auth/test-login', 'POST', { email, password });
