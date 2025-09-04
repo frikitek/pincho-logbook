@@ -49,7 +49,7 @@ export const Login = ({ onLoginSuccess }: LoginProps) => {
             alt="Laureados Logo" 
             className="mx-auto h-16 w-auto mb-4"
           />
-          <h1 className="text-3xl font-bold text-primary">Laureados</h1>
+          <h1 className="text-3xl font-bold text-primary">Laureados TEST</h1>
           <p className="text-muted-foreground mt-2">Gestión de pinchos y valoraciones</p>
         </div>
 
