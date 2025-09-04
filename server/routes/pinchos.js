@@ -60,7 +60,7 @@ router.get('/', async (req, res) => {
 
   } catch (error) {
     console.error('Error obteniendo pinchos:', error);
-    res.status(500).json({ error: 'Error interno del servidor' });
+    res.status(500).json({ error: 'Error interno del servidor', detail: error.message });
   }
 });
 
@@ -116,7 +116,7 @@ router.get('/:id', async (req, res) => {
 
   } catch (error) {
     console.error('Error obteniendo pincho:', error);
-    res.status(500).json({ error: 'Error interno del servidor' });
+    res.status(500).json({ error: 'Error interno del servidor', detail: error.message });
   }
 });
 
@@ -158,7 +158,7 @@ router.post('/', authenticateToken, async (req, res) => {
 
   } catch (error) {
     console.error('Error creando pincho:', error);
-    res.status(500).json({ error: 'Error interno del servidor' });
+    res.status(500).json({ error: 'Error interno del servidor', detail: error.message });
   }
 });
 
@@ -212,7 +212,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
 
   } catch (error) {
     console.error('Error actualizando pincho:', error);
-    res.status(500).json({ error: 'Error interno del servidor' });
+    res.status(500).json({ error: 'Error interno del servidor', detail: error.message });
   }
 });
 
@@ -241,7 +241,7 @@ router.delete('/:id', authenticateToken, async (req, res) => {
 
   } catch (error) {
     console.error('Error eliminando pincho:', error);
-    res.status(500).json({ error: 'Error interno del servidor' });
+    res.status(500).json({ error: 'Error interno del servidor', detail: error.message });
   }
 });
 
