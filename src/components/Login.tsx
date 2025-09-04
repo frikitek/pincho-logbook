@@ -21,6 +21,10 @@ export const Login = ({ onLoginSuccess }: LoginProps) => {
     setLoading(true);
 
     try {
+      // Test the endpoint first
+      const testResult = await api.testLogin(email, password);
+      console.log('Test result:', testResult);
+      
       await api.login(email, password);
       {
         toast({

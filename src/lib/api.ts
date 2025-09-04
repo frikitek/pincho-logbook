@@ -21,13 +21,31 @@ export function clearAuthToken() {
 
 async function request<T>(path: string, method: HttpMethod = 'GET', body?: unknown): Promise<T> {
   const token = getAuthToken();
-  const res = await fetch(`${API_URL}${path}`, {
+  const url = `${API_URL}${path}`;
+  
+  console.log('Making request:', {
+    url,
+    method,
+    body: body ? JSON.stringify(body) : undefined,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    }
+  });
+
+  const res = await fetch(url, {
     method,
     headers: {
       'Content-Type': 'application/json',
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
     body: body ? JSON.stringify(body) : undefined,
+  });
+
+  console.log('Response received:', {
+    status: res.status,
+    statusText: res.statusText,
+    url: res.url
   });
 
   const data = await res.json().catch(() => ({}));
@@ -72,6 +90,11 @@ export const api = {
   canRate: (pinchoId: string) => request<{ canRate: boolean }>(`/valoraciones/can-rate/${pinchoId}`),
 
   // Auth
+  testLogin: async (email: string, password: string) => {
+    console.log('API test login called with:', { email, password });
+    const data = await request<{ message: string; method: string }>('/auth/test-login', 'POST', { email, password });
+    return data;
+  },
   login: async (email: string, password: string) => {
     console.log('API login called with:', { email, password });
     const data = await request<{ token: string; user: any }>('/auth/login', 'POST', { email, password });
