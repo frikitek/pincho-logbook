@@ -73,6 +73,7 @@ export const api = {
 
   // Auth
   login: async (email: string, password: string) => {
+    console.log('API login called with:', { email, password });
     const data = await request<{ token: string; user: any }>('/auth/login', 'POST', { email, password });
     setAuthToken(data.token);
     return data;

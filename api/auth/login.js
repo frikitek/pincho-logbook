@@ -10,6 +10,14 @@ export default async function handler(req, res) {
     body: req.body
   });
 
+  // Handle CORS preflight
+  if (req.method === 'OPTIONS') {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    return res.status(200).end();
+  }
+
   if (req.method !== 'POST') {
     return res.status(405).json({ 
       error: 'Method Not Allowed',
@@ -51,6 +59,7 @@ export default async function handler(req, res) {
       { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
     );
 
+    res.setHeader('Access-Control-Allow-Origin', '*');
     return res.status(200).json({ success: true, token, user: { id: user.id, email: user.email } });
   } catch (e) {
     console.error('Login error:', e);
