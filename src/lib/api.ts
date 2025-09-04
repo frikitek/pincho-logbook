@@ -20,8 +20,26 @@ async function request<T>(path: string, method: HttpMethod = 'GET', body?: unkno
 export const api = {
   // Pinchos
   getPinchos: () => request<{ pinchos: any[] } | any[]>('/pinchos'),
-  createPincho: (payload: any) => request<any>('/pinchos', 'POST', payload),
-  updatePincho: (id: string, payload: any) => request<any>(`/pinchos/${id}`, 'PUT', payload),
+  createPincho: (payload: any) => {
+    const body = {
+      nombre: payload.nombre,
+      bar: payload.bar,
+      precio: payload.precio,
+      categoria_id: payload.categoria ?? payload.categoria_id,
+      foto_url: payload.foto ?? payload.foto_url ?? null,
+    };
+    return request<any>('/pinchos', 'POST', body);
+  },
+  updatePincho: (id: string, payload: any) => {
+    const body = {
+      nombre: payload.nombre,
+      bar: payload.bar,
+      precio: payload.precio,
+      categoria_id: payload.categoria ?? payload.categoria_id,
+      foto_url: payload.foto ?? payload.foto_url ?? null,
+    };
+    return request<any>(`/pinchos/${id}`, 'PUT', body);
+  },
   deletePincho: (id: string) => request<any>(`/pinchos/${id}`, 'DELETE'),
 
   // Categorias
