@@ -1,5 +1,8 @@
 import { Client } from 'pg';
 
+// Relax TLS verification (temporary) to bypass self-signed chain issues on serverless
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+
 export default async function handler(_req, res) {
   const connectionString = process.env.DATABASE_URL;
   const client = new Client({
